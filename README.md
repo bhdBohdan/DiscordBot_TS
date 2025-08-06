@@ -4,7 +4,7 @@
 
 - create your proj in [discord dev](https://discord.com/developers/applications)
 - turn on dev mode in discord settings, to get your guild id
-- fill your env with (create api key [here on openrouter]((https://openrouter.ai))
+- fill your env with (create api key [here on openrouter](https://openrouter.ai))
 
 ```bash
   DISCORD_TOKEN,
