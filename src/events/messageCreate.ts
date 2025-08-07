@@ -15,10 +15,29 @@ const openai = new OpenAI({
 export default {
   name: Events.MessageCreate,
   async execute(message: Message) {
+    console.log("mesagereached");
     if (message.author.bot) return;
 
+    if (message.content.toLowerCase().includes("kurisetina")) {
+      await message.reply("Dont add 'tina' !!!");
+      return;
+    }
+
+    if (message.content.toLowerCase().includes("goon")) {
+      const embed = new EmbedBuilder()
+        // .setTitle('Here is your image!')
+        .setImage(
+          "https://i.pinimg.com/736x/b5/aa/a7/b5aaa701a248e10090a89d90c6de24fc.jpg"
+        );
+      await message.reply({ embeds: [embed] });
+      return;
+    }
+
     // Check if bot is mentioned
-    if (message.mentions.has(message.client.user)) {
+    if (
+      message.mentions.has(message.client.user) ||
+      message.channel.type === 1
+    ) {
       try {
         const completion = await openai.chat.completions.create({
           model: MODEL,
@@ -26,7 +45,7 @@ export default {
             {
               role: "system",
               content:
-                "Answer as a silly girl Osaka from Azumanga daioh. Answer no more than 20 words.",
+                "Answer as very silly and cute girl. You dont like people named Maxim. Answer no more than 20 words.",
             },
             {
               role: "user",
@@ -41,20 +60,7 @@ export default {
         console.error("AI error:", err);
         await message.reply(" Failed to get a response from AI.");
       }
-    }
-
-    // Check for a specific keyword
-    if (message.content.toLowerCase().includes("magicword")) {
-      await message.reply("Magic word detected!");
-    }
-
-    if (message.content.toLowerCase().includes("goon")) {
-      const embed = new EmbedBuilder()
-        // .setTitle('Here is your image!')
-        .setImage(
-          "https://i.pinimg.com/736x/b5/aa/a7/b5aaa701a248e10090a89d90c6de24fc.jpg"
-        );
-      await message.reply({ embeds: [embed] });
+      return;
     }
   },
 };

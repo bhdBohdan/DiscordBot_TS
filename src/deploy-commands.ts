@@ -1,7 +1,6 @@
-import { REST, Routes } from "discord.js";
+import { Client, GatewayIntentBits, REST, Routes } from "discord.js";
 import * as fs from "node:fs";
 import * as path from "node:path";
-
 import env from "dotenv";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
@@ -9,9 +8,8 @@ env.config();
 
 const token = process.env.DISCORD_TOKEN || "nulltoken";
 const clientId = process.env.DISCORD_CLIENT_ID || "nulltoken";
-const guildId = process.env.DISCORD_GUILD_ID || "nulltoken";
 
-const commands = [];
+const commands: any[] = [];
 // Grab all the command folders from the commands directory you created earlier
 
 const __filename = fileURLToPath(import.meta.url);
@@ -43,27 +41,45 @@ for (const folder of commandFolders) {
   }
 }
 
+console.log("Succes");
 // Construct and prepare an instance of the REST module
 const rest = new REST().setToken(token);
 
-// and deploy your commands!
-(async () => {
+// Create a temporary client to fetch all guilds
+//  to deploy  commands to all guilds
+const client = new Client({
+  intents: [GatewayIntentBits.Guilds],
+});
+
+client.once("ready", async () => {
   try {
+    const guilds = client.guilds.cache.map((g) => g.id);
     console.log(
-      `Started refreshing ${commands.length || 0} application (/) commands.`
+      `Deploying to ${guilds.length || 0} guild(s) ${
+        commands.length || 0
+      } application (/) commands....`
     );
 
     // The put method is used to fully refresh all commands in the guild with the current set
-    const data: any = await rest.put(
-      Routes.applicationGuildCommands(clientId, guildId),
-      { body: commands }
-    );
 
-    console.log(
-      `Successfully reloaded ${data.length || 0} application (/) commands.`
-    );
+    for (const guildId of guilds) {
+      try {
+        const data: any = await rest.put(
+          Routes.applicationGuildCommands(clientId, guildId),
+          { body: commands }
+        );
+
+        console.log(`✅ Deployed ${data.length} commands to guild ${guildId}`);
+      } catch (err) {
+        console.error(`❌ Failed to deploy to guild ${guildId}`, err);
+      }
+    }
   } catch (error) {
     // And of course, make sure you catch and log any errors!
     console.error(error);
+  } finally {
+    client.destroy(); // cleanup
   }
-})();
+});
+
+client.login(token);

@@ -3,6 +3,7 @@ import {
   Collection,
   GatewayIntentBits,
   MessageFlags,
+  Partials,
 } from "discord.js";
 import env from "dotenv";
 import * as fs from "node:fs";
@@ -20,7 +21,12 @@ const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.GuildMembers,
     GatewayIntentBits.MessageContent,
+    GatewayIntentBits.DirectMessages,
+  ],
+  partials: [
+    Partials.Channel, // Required for DM support
   ],
 });
 client.commands = new Collection();
